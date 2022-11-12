@@ -1,0 +1,10 @@
+Target dependency graph (4 targets)
+Flutter in Pods, no dependencies
+webview_flutter_wkwebview in Pods, depends on:
+Flutter in Pods (explicit)
+Pods-Runner in Pods, depends on:
+Flutter in Pods (explicit)
+webview_flutter_wkwebview in Pods (explicit)
+Runner in Runner, depends on:
+Pods-Runner in Pods (implicit dependency via file 'Pods_Runner.framework' in build phase 'Link Binary')
+webview_flutter_wkwebview in Pods (implicit dependency via options '-framework webview_flutter_wkwebview' in build setting 'OTHER_LDFLAGS')

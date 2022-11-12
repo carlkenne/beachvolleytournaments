@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
 import 'package:azure_cosmosdb/azure_cosmosdb.dart' as cosmosdb;
+import 'tournament.dart';
+import 'models.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(title: 'Startup name gen', home: Home());
+    return const MaterialApp(title: 'root', home: Home());
   }
 }
 
@@ -20,14 +21,13 @@ class Home extends StatefulWidget {
   const Home({super.key});
 
   @override
-  State<Home> createState() => _HomeState();
+  State<Home> createState() => HomeState();
 }
 
-class _HomeState extends State<Home> {
-  var _tournaments = <Tournament>[];
+class HomeState extends State<Home> {
+  final _tournaments = <Tournament>[];
   final _biggerFont = const TextStyle(fontSize: 18);
 
-  // experimental code for query cosmos db
   @override
   void initState() {
     super.initState();
@@ -36,9 +36,8 @@ class _HomeState extends State<Home> {
 
   void fetchCosmos() async {
     final cosmosDB = cosmosdb.Server(
-        'https://beachvolleycosmos.documents.azure.com:443/', // update this
-        masterKey:
-            'EH4SqiJoCbpEP812IPnymBdl6CyXoLtpliE0y3R5tuGTqXeEtx8KowB2zf11PvoEpGZ4c5rjN6ETTGBPeBL7ag=='); // and update this
+        'https://beachvolleycosmos.documents.azure.com:443/',
+        masterKey: 'insert here');
     final database = await cosmosDB.databases.openOrCreate('Beachvolley');
     final todoCollection = await database.collections
         .openOrCreate('Tournaments', partitionKeys: ['/year']);
@@ -61,51 +60,36 @@ class _HomeState extends State<Home> {
     });
   }
 
-  // end experiment
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("Säsongskalendern"),
-        ),
-        body: ListView.builder(
-            itemCount: _tournaments.length,
-            padding: const EdgeInsets.all(16.0),
-            itemBuilder: (context, i) {
-              return ListTile(
-                  title: Text(_tournaments[i].name, style: _biggerFont),
-                  trailing: Icon(Icons.favorite_outline_rounded,
-                      semanticLabel: "save"),
-                  onTap: () => setState(() {}));
-            }));
-  }
-}
-
-// change this to match cosmos tournament
-class Tournament extends cosmosdb.BaseDocument {
-  Tournament(this.id, this.name, this.year);
-
-  @override
-  final String id;
-  String name;
-  int year;
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'year': year,
-      };
-
-  static Tournament fromJson(Map json) {
-    var dueDate = json['due-date'];
-    if (dueDate != null) {
-      dueDate = DateTime.parse(dueDate).toLocal();
-    }
-    final tournament =
-        Tournament(json['Id'].toString(), json['Name'], json['Year']);
-
-    return tournament;
+    return Stack(children: <Widget>[
+      Image.asset(
+        "resources/sand.png",
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        fit: BoxFit.cover,
+      ),
+      Scaffold(
+          appBar: AppBar(
+            title: const Text("Säsongskalendern"),
+          ),
+          backgroundColor: Colors.transparent,
+          body: ListView.builder(
+              itemCount: _tournaments.length,
+              padding: const EdgeInsets.all(0.0),
+              itemBuilder: (context, i) {
+                if (i.isOdd) return const Divider(color: Colors.blueGrey);
+                return ListTile(
+                    title: Text(_tournaments[i].name, style: _biggerFont),
+                    onTap: () => setState(() {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    TournamentView(_tournaments[i])),
+                          );
+                        }));
+              }))
+    ]);
   }
 }
